@@ -1,0 +1,37 @@
+# Dependencies — reinstalled at build time
+node_modules/
+
+# Environment files — never include secrets in image
+.env
+.env.*
+
+# Documentation
+*.md
+
+# Test files
+tests/
+
+# Lint configuration
+.eslintrc*
+.eslintignore
+
+# Editor and IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS artifacts
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Coverage reports
+coverage/
+.nyc_output/
+
+# Build artifacts
+dist/
