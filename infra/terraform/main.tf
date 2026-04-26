@@ -313,6 +313,7 @@ resource "kubernetes_deployment" "worker_service" {
 
         # Injeta imagePullSecret apenas quando registry externo estiver configurado.
         # Mesmo secret "ghcr-credentials" usado pelo api-gateway (namespace compartilhado).
+        # O secret deve ser criado manualmente: kubectl create secret docker-registry ghcr-credentials ...
         dynamic "image_pull_secrets" {
           for_each = var.image_registry != "" ? [1] : []
           content {
@@ -324,7 +325,12 @@ resource "kubernetes_deployment" "worker_service" {
           name  = "worker-service"
           image = var.image_registry != "" ? "${var.image_registry}/worker-service:${var.image_tag}" : "worker-service:${var.image_tag}"
 
+<<<<<<< HEAD
           # Always quando registry externo (GHCR); Never para daemon minikube local.
+=======
+          # Never: imagem buildada localmente no daemon minikube (modo local).
+          # Always: forca pull do registry ao criar/reiniciar pod (modo GHCR).
+>>>>>>> feature/cicd-T-04
           image_pull_policy = var.image_registry != "" ? "Always" : "Never"
 
           # Injeta variaveis de configuracao via ConfigMap (HEARTBEAT_INTERVAL, LOG_LEVEL)
