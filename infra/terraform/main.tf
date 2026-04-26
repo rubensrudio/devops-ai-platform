@@ -139,9 +139,10 @@ resource "kubernetes_deployment" "api_gateway" {
       }
 
       spec {
-        # runAsNonRoot previne execucao como root — boas praticas OWASP K8s
+        # runAsNonRoot + runAsUser numerico: necessario quando imagem usa usuario nomeado (node)
         security_context {
           run_as_non_root = true
+          run_as_user     = 1000
         }
 
         container {
@@ -293,9 +294,10 @@ resource "kubernetes_deployment" "worker_service" {
       }
 
       spec {
-        # runAsNonRoot: mesma politica de seguranca do api-gateway
+        # runAsNonRoot + runAsUser numerico: worker usa uid 1001 (usuario 'worker')
         security_context {
           run_as_non_root = true
+          run_as_user     = 1001
         }
 
         container {

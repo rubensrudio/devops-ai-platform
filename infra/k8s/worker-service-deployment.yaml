@@ -23,6 +23,7 @@ spec:
     spec:
       securityContext:
         runAsNonRoot: true
+        runAsUser: 1001
       containers:
         - name: worker-service
           image: worker-service:latest
