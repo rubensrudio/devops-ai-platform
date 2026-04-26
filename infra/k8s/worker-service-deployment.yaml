@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: worker-service
+  namespace: devops-ai
+  labels:
+    app: worker-service
+    feature: k8s-terraform
+    week: "2"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: worker-service
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: worker-service
+        feature: k8s-terraform
+        week: "2"
+    spec:
+      securityContext:
+        runAsNonRoot: true
+      containers:
+        - name: worker-service
+          image: worker-service:latest
+          imagePullPolicy: Never
+          envFrom:
+            - configMapRef:
+                name: platform-config
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 100m
+              memory: 128Mi

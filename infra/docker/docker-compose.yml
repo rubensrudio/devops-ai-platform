@@ -29,6 +29,7 @@ services:
   # ---------------------------------------------------------------------------
   api-gateway:
     container_name: api-gateway
+    image: api-gateway:latest
     build:
       context: ../../apps/api-gateway
       dockerfile: Dockerfile
@@ -57,6 +58,7 @@ services:
   # ---------------------------------------------------------------------------
   worker-service:
     container_name: worker-service
+    image: worker-service:latest
     build:
       context: ../../apps/worker-service
       dockerfile: Dockerfile
