@@ -63,9 +63,9 @@ resource "kubernetes_namespace" "devops_ai" {
 # Centraliza as variaveis de configuracao consumidas por api-gateway e
 # worker-service via envFrom.configMapRef. Espelha infra/k8s/configmap.yaml.
 # Valores derivados das variaveis Terraform (ver variables.tf):
-#   - API_PORT            → porta de escuta do api-gateway
-#   - HEARTBEAT_INTERVAL  → intervalo (s) de heartbeat do worker-service
-#   - LOG_LEVEL           → nivel de log (debug | info | warn | error)
+#   - API_PORT            -> porta de escuta do api-gateway
+#   - HEARTBEAT_INTERVAL  -> intervalo (s) de heartbeat do worker-service
+#   - LOG_LEVEL           -> nivel de log (debug | info | warn | error)
 # =============================================================================
 resource "kubernetes_config_map" "platform_config" {
   metadata {
@@ -205,7 +205,10 @@ resource "kubernetes_deployment" "api_gateway" {
     }
   }
 
-  depends_on = [kubernetes_namespace.devops_ai]
+  # depends_on garante que namespace e configmap existam antes do deployment.
+  # O ConfigMap deve existir para que o envFrom.configMapRef seja resolvido
+  # corretamente durante o provisionamento (evita race condition).
+  depends_on = [kubernetes_namespace.devops_ai, kubernetes_config_map.platform_config]
 }
 
 # =============================================================================
@@ -325,7 +328,10 @@ resource "kubernetes_deployment" "worker_service" {
     }
   }
 
-  depends_on = [kubernetes_namespace.devops_ai]
+  # depends_on garante que namespace e configmap existam antes do deployment.
+  # O ConfigMap deve existir para que o envFrom.configMapRef seja resolvido
+  # corretamente durante o provisionamento (evita race condition).
+  depends_on = [kubernetes_namespace.devops_ai, kubernetes_config_map.platform_config]
 }
 
 # =============================================================================
@@ -339,7 +345,7 @@ resource "kubernetes_deployment" "worker_service" {
 #   Sem ele, este recurso sera criado mas nenhum ADDRESS sera atribuido.
 #
 # CONFIGURACAO DE HOST LOCAL:
-#   Para resolver "api-gateway.local" sem Header explícito, adicione ao /etc/hosts
+#   Para resolver "api-gateway.local" sem Header explicito, adicione ao /etc/hosts
 #   do WSL2: echo "$(minikube ip) api-gateway.local" | sudo tee -a /etc/hosts
 #   Ou use: curl -H "Host: api-gateway.local" http://$(minikube ip)/health
 # =============================================================================
@@ -347,18 +353,14 @@ resource "kubernetes_ingress_v1" "api_gateway" {
   metadata {
     name      = "api-gateway"
     namespace = kubernetes_namespace.devops_ai.metadata[0].name
+    annotations = {
+      "kubernetes.io/ingress.class"                = "nginx"
+      "nginx.ingress.kubernetes.io/rewrite-target" = "/"
+    }
     labels = {
       app     = "api-gateway"
       feature = "k8s-terraform"
       week    = "2"
-    }
-
-    # Annotations nginx: define o controller responsavel e regra de rewrite
-    # ingress.class: seleciona o nginx ingress controller (minikube addon)
-    # rewrite-target: "/" normaliza o path para o backend
-    annotations = {
-      "kubernetes.io/ingress.class"                  = "nginx"
-      "nginx.ingress.kubernetes.io/rewrite-target"   = "/"
     }
   }
 
@@ -387,5 +389,8 @@ resource "kubernetes_ingress_v1" "api_gateway" {
     }
   }
 
-  depends_on = [kubernetes_namespace.devops_ai]
+  # depends_on garante que o namespace e o Service existam antes de criar o Ingress.
+  # O Service deve existir para que o backend do Ingress seja resolvido corretamente
+  # e o nginx ingress controller consiga registrar as regras de roteamento.
+  depends_on = [kubernetes_namespace.devops_ai, kubernetes_service.api_gateway]
 }
