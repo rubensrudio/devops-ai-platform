@@ -246,6 +246,7 @@
   - `scripts/smoke-test.sh`
 - **Descrição**: Criar script `smoke-test.sh` que executa a sequência completa de validação local: (1) `docker compose up --build -d`, (2) aguarda 15 segundos para os containers estabilizarem, (3) `curl -f http://localhost:$API_PORT/health` e confirma HTTP 200, (4) `docker logs worker-service` e confirma presença de ao menos uma linha de heartbeat no formato correto, (5) `docker compose down` e confirma exit code 0. O script falha com mensagem descritiva em qualquer etapa que não passar.
 - **Critério de verificação**: Executar `scripts/smoke-test.sh` em máquina limpa (sem imagens em cache) e confirmar que todas as cinco etapas passam sem intervenção manual. Exit code 0 ao final.
+- **Status**: ✅ APROVADA em 2026-04-26 — branch: feature/init-TASK-012
 
 ---
 
