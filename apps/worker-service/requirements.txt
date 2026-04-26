@@ -1,0 +1,2 @@
+# worker-service runtime dependencies
+# No external dependencies — stdlib only (Python 3.11+)

@@ -1,0 +1,54 @@
+# Python bytecode and cache
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyc
+
+# Virtual environments
+.venv/
+venv/
+env/
+.env/
+
+# Environment files — never bake secrets into the image
+.env
+.env.*
+!.env.example
+
+# Test infrastructure — not needed in the container
+tests/
+test_*.py
+*_test.py
+.pytest_cache/
+.coverage
+htmlcov/
+coverage.xml
+
+# Development / editor artifacts
+*.egg-info/
+*.egg
+dist/
+build/
+.eggs/
+
+# Type checking caches
+.mypy_cache/
+.pytype/
+
+# Documentation
+*.md
+docs/
+
+# OS artifacts
+.DS_Store
+Thumbs.db
+
+# CI / tooling config that has no place in the image
+.github/
+Makefile
+tox.ini
+.flake8
+.ruff.toml
+pyproject.toml
+setup.cfg
+setup.py
