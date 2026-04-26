@@ -24,10 +24,15 @@ spec:
       securityContext:
         runAsNonRoot: true
         runAsUser: 1001
+      # Local (minikube daemon): image: worker-service:latest, imagePullPolicy: Never, sem imagePullSecrets
+      imagePullSecrets:
+        - name: ghcr-credentials
       containers:
         - name: worker-service
-          image: worker-service:latest
-          imagePullPolicy: Never
+          # Local (minikube daemon): image: worker-service:latest, imagePullPolicy: Never, sem imagePullSecrets
+          image: ghcr.io/rubensrudio/worker-service:latest
+          # Local (minikube daemon): image: worker-service:latest, imagePullPolicy: Never, sem imagePullSecrets
+          imagePullPolicy: Always
           envFrom:
             - configMapRef:
                 name: platform-config

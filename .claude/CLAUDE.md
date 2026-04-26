@@ -35,17 +35,49 @@ O repositorio comeca privado e sera aberto publicamente na fase de polish (Seman
 
 As skills definem o contrato de interface de cada comando que voce pode executar.
 
-| Comando    | Arquivo de definicao              | Descricao                                                  | Status             |
-|------------|----------------------------------|------------------------------------------------------------|--------------------|
-| `/deploy`  | `.claude/skills/deploy.md`       | Faz deploy em um ambiente; `/deploy local` executa `terraform apply` real | Real (env `local`) |
-| `/rollback`| `.claude/skills/rollback.md`     | Reverte o deploy mais recente de um servico                | Stub               |
-| `/health`  | `.claude/skills/health-check.md` | Verifica o status de saude dos servicos                    | Stub               |
+| Comando          | Arquivo de definicao              | Descricao                                                            | Status                            |
+|------------------|----------------------------------|----------------------------------------------------------------------|-----------------------------------|
+| `/deploy local`  | `.claude/skills/deploy.md`       | Deploy no cluster minikube local via `terraform apply`               | Real (env `local`)                |
+| `/deploy staging`| `.claude/skills/deploy.md`       | Deploy via GHCR usando `deploy-from-registry.sh`                     | Real (deploy-from-registry.sh)    |
+| `/rollback`      | `.claude/skills/rollback.md`     | Reverte o deploy mais recente de um servico                          | Stub                              |
+| `/health`        | `.claude/skills/health-check.md` | Verifica o status de saude dos servicos                              | Stub                              |
 
 Para invocar uma skill, use o comando correspondente. Exemplo: `/deploy staging`.
 O agente carregara o arquivo de definicao da skill e seguira as instrucoes contidas nele.
 
 Se o arquivo de uma skill estiver ausente, reporte o arquivo faltante ao usuario
 ao inves de falhar silenciosamente.
+
+---
+
+## CI/CD
+
+Os workflows do GitHub Actions estao em `.github/workflows/` e cobrem o ciclo completo
+commit → artefato → deploy.
+
+| Workflow          | Trigger                          | Descricao                                             |
+|-------------------|----------------------------------|-------------------------------------------------------|
+| `ci.yml`          | push/PR para `develop` e `feature/**` | Lint + testes para api-gateway e worker-service  |
+| `docker-build.yml`| push para `develop`              | Build e push de imagens no GHCR (latest + sha-<7>)    |
+| `deploy.yml`      | `workflow_dispatch`              | Registra intencao em DECISIONS.md + instrucao manual  |
+
+### Deploy via GHCR (staging)
+
+Para deployar uma imagem publicada no GHCR, execute:
+
+```bash
+IMAGE_TAG=<tag> IMAGE_REGISTRY=ghcr.io/rubensrudio bash scripts/deploy-from-registry.sh
+```
+
+Antes do primeiro deploy via GHCR, crie o `imagePullSecret` no cluster:
+
+```bash
+kubectl create secret docker-registry ghcr-credentials \
+  --docker-server=ghcr.io \
+  --docker-username=rubensrudio \
+  --docker-password=<SEU_PAT_GHCR> \
+  -n devops-ai
+```
 
 ---
 
@@ -144,12 +176,17 @@ devops-ai-platform/
 │       ├── main.tf
 │       ├── variables.tf
 │       └── outputs.tf
-├── .github/                    # Placeholder para workflows (Semana 4)
+├── .github/
+│   └── workflows/
+│       ├── ci.yml              # Lint + testes (push/PR develop, feature/**)
+│       ├── docker-build.yml    # Build + push GHCR (push develop)
+│       └── deploy.yml          # workflow_dispatch — registra intencao de deploy
 ├── mcp/                        # Placeholder para MCP Servers (Semana 5)
 ├── scripts/
 │   ├── validate-structure.sh   # Valida estrutura do repositorio
 │   ├── smoke-test.sh           # Teste de integracao end-to-end Docker Compose
-│   └── k8s-setup.sh            # Setup do ambiente Kubernetes local (minikube)
+│   ├── k8s-setup.sh            # Setup do ambiente Kubernetes local (minikube)
+│   └── deploy-from-registry.sh # Deploy end-to-end via GHCR (IMAGE_TAG + IMAGE_REGISTRY)
 ├── .env.example                # Variaveis de ambiente documentadas
 └── README.md                   # Instrucoes de setup e visao geral
 ```
