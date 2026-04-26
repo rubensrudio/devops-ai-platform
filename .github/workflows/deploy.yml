@@ -1,0 +1,60 @@
+name: Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        type: string
+        default: "latest"
+        description: "Tag da imagem GHCR a deployar (ex: latest, sha-abc1234)"
+        required: false
+
+jobs:
+  record-and-instruct:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Record deploy intent in DECISIONS.md
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const path = '.claude/memory/DECISIONS.md';
+            const tag = '${{ inputs.image_tag }}';
+            const date = new Date().toISOString().split('T')[0];
+            const entry = `[${date}] DECISAO: deploy via workflow_dispatch solicitado para tag ${tag} | RACIOCINIO: acionamento manual via GitHub Actions | CONTEXTO: Semana 3, cicd\n`;
+
+            const content = fs.readFileSync(path, 'utf8');
+            const updated = content + entry;
+            const encoded = Buffer.from(updated).toString('base64');
+
+            const { data: file } = await github.rest.repos.getContent({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              path: path,
+            });
+
+            await github.rest.repos.createOrUpdateFileContents({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              path: path,
+              message: `chore: record deploy intent for tag ${tag} [skip ci]`,
+              content: encoded,
+              sha: file.sha,
+            });
+
+      - name: Print deploy command
+        run: |
+          echo "============================================================"
+          echo "  Para executar o deploy localmente:"
+          echo ""
+          echo "  IMAGE_TAG=${{ inputs.image_tag }} \\"
+          echo "  IMAGE_REGISTRY=ghcr.io/rubensrudio \\"
+          echo "  bash scripts/deploy-from-registry.sh"
+          echo "============================================================"
