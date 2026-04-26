@@ -51,6 +51,7 @@
   - `.env.example`
 - **Descrição**: Criar os diretórios obrigatórios do repositório (`.claude/memory/`, `.claude/skills/`, `.claude/agents/`, `apps/api-gateway/src/`, `apps/worker-service/src/`, `infra/docker/`, `.github/`, `mcp/`, `scripts/`) com `.gitkeep` onde necessário. Criar `.gitignore` (excluindo `.env`, `node_modules`, `__pycache__`, artefatos de build e arquivos de SO) e `.env.example` com as três variáveis documentadas (`API_PORT=3000`, `HEARTBEAT_INTERVAL=10`, `LOG_LEVEL=info`).
 - **Critério de verificação**: Executar `ls -la` recursivo no repositório clonado e confirmar que todos os diretórios obrigatórios existem. Confirmar que `.env` está listado no `.gitignore` e que `.env.example` contém as três variáveis.
+- **Status**: ✅ APROVADA em 2026-04-26 — branch: feature/init-TASK-001
 
 ---
 
