@@ -14,15 +14,19 @@ as convenções de desenvolvimento e os guardrails de segurança que você DEVE 
 
 **devops-ai-platform** e uma plataforma de portfolio que demonstra a integracao de
 agentes de IA (Claude Code) ao ciclo completo de DevOps — do commit ao container
-rodando localmente, com caminho para cluster Kubernetes nas semanas seguintes.
+rodando localmente via Docker Compose (Semana 1), evoluindo para implantacao em
+Kubernetes local com infraestrutura gerenciada por Terraform (Semana 2).
 
 O projeto e composto por:
 - `api-gateway` — servico HTTP Node.js/Express que expoe `GET /health`
 - `worker-service` — processo Python com loop de heartbeat
 - Infraestrutura Docker Compose em `infra/docker/`
+- Manifests Kubernetes em `infra/k8s/` (namespace `devops-ai`)
+- Infraestrutura como codigo Terraform em `infra/terraform/`
+- Script de setup do cluster local em `scripts/k8s-setup.sh`
 - Skills e agents configurados para operacoes de DevOps assistidas por IA
 
-Contexto de execucao: ambiente local Windows com Docker Desktop + WSL2.
+Contexto de execucao: ambiente local Windows com Docker Desktop + WSL2 (minikube).
 O repositorio comeca privado e sera aberto publicamente na fase de polish (Semana 6).
 
 ---
@@ -30,13 +34,12 @@ O repositorio comeca privado e sera aberto publicamente na fase de polish (Seman
 ## Skills Disponiveis
 
 As skills definem o contrato de interface de cada comando que voce pode executar.
-Cada skill esta em modo stub nesta fase — nao executa operacoes reais ainda.
 
-| Comando    | Arquivo de definicao              | Descricao                                      |
-|------------|----------------------------------|------------------------------------------------|
-| `/deploy`  | `.claude/skills/deploy.md`       | Faz deploy de um servico em um ambiente (`<env>`) |
-| `/rollback`| `.claude/skills/rollback.md`     | Reverte o deploy mais recente de um servico    |
-| `/health`  | `.claude/skills/health-check.md` | Verifica o status de saude dos servicos        |
+| Comando    | Arquivo de definicao              | Descricao                                                  | Status             |
+|------------|----------------------------------|------------------------------------------------------------|--------------------|
+| `/deploy`  | `.claude/skills/deploy.md`       | Faz deploy em um ambiente; `/deploy local` executa `terraform apply` real | Real (env `local`) |
+| `/rollback`| `.claude/skills/rollback.md`     | Reverte o deploy mais recente de um servico                | Stub               |
+| `/health`  | `.claude/skills/health-check.md` | Verifica o status de saude dos servicos                    | Stub               |
 
 Para invocar uma skill, use o comando correspondente. Exemplo: `/deploy staging`.
 O agente carregara o arquivo de definicao da skill e seguira as instrucoes contidas nele.
@@ -121,18 +124,32 @@ devops-ai-platform/
 │   │   ├── deploy-agent.md     # Stub do agente de deploy
 │   │   └── review-agent.md     # Stub do agente de revisao
 │   └── skills/
-│       ├── deploy.md           # Skill /deploy
+│       ├── deploy.md           # Skill /deploy (real para env local)
 │       ├── rollback.md         # Skill /rollback
 │       └── health-check.md     # Skill /health
 ├── apps/
 │   ├── api-gateway/            # Servico HTTP Node.js/Express
 │   └── worker-service/         # Worker Python com heartbeat
 ├── infra/
-│   └── docker/
-│       └── docker-compose.yml  # Orquestracao local dos servicos
+│   ├── docker/
+│   │   └── docker-compose.yml  # Orquestracao local dos servicos
+│   ├── k8s/                    # Manifests Kubernetes raw (namespace devops-ai)
+│   │   ├── namespace.yaml
+│   │   ├── configmap.yaml
+│   │   ├── api-gateway-deployment.yaml
+│   │   ├── api-gateway-service.yaml
+│   │   ├── worker-service-deployment.yaml
+│   │   └── ingress.yaml
+│   └── terraform/              # Infraestrutura como codigo (provider kubernetes)
+│       ├── main.tf
+│       ├── variables.tf
+│       └── outputs.tf
 ├── .github/                    # Placeholder para workflows (Semana 4)
 ├── mcp/                        # Placeholder para MCP Servers (Semana 5)
-├── scripts/                    # Scripts de validacao e smoke test
+├── scripts/
+│   ├── validate-structure.sh   # Valida estrutura do repositorio
+│   ├── smoke-test.sh           # Teste de integracao end-to-end Docker Compose
+│   └── k8s-setup.sh            # Setup do ambiente Kubernetes local (minikube)
 ├── .env.example                # Variaveis de ambiente documentadas
 └── README.md                   # Instrucoes de setup e visao geral
 ```
@@ -142,13 +159,13 @@ devops-ai-platform/
 ## Comandos Rapidos
 
 ```bash
-# Subir todos os servicos localmente
+# Subir todos os servicos localmente (Docker Compose)
 docker compose -f infra/docker/docker-compose.yml up --build
 
-# Verificar saude do api-gateway
+# Verificar saude do api-gateway (Docker Compose)
 curl http://localhost:3000/health
 
-# Ver heartbeats do worker
+# Ver heartbeats do worker (Docker Compose)
 docker logs worker-service
 
 # Derrubar todos os containers
@@ -156,6 +173,18 @@ docker compose -f infra/docker/docker-compose.yml down
 
 # Validar estrutura do repositorio
 bash scripts/validate-structure.sh
+
+# Setup do ambiente Kubernetes local (minikube)
+bash scripts/k8s-setup.sh
+
+# Verificar pods no cluster
+kubectl get pods -n devops-ai
+
+# Logs do api-gateway no K8s
+kubectl logs -n devops-ai deploy/api-gateway
+
+# Health check via Ingress (requer minikube rodando)
+curl -H "Host: api-gateway.local" http://$(minikube ip)/health
 ```
 
 ---
