@@ -1,0 +1,37 @@
+# Ingress manifest para o servico api-gateway usando nginx ingress controller.
+#
+# ATENCAO — Requisito de /etc/hosts no host WSL2:
+# O host "api-gateway.local" nao e resolvido automaticamente. Para acessar o
+# servico pelo nome, adicione a entrada abaixo no arquivo /etc/hosts do WSL2
+# (ou do host que executara o curl/browser):
+#
+#   echo "$(minikube ip) api-gateway.local" | sudo tee -a /etc/hosts
+#
+# Substitua $(minikube ip) pelo IP real retornado pelo comando, ex: 192.168.49.2.
+# Sem essa entrada, as requisicoes HTTP com o header "Host: api-gateway.local"
+# deverao ser feitas explicitamente via:
+#   curl -H "Host: api-gateway.local" http://$(minikube ip)/health
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: api-gateway
+  namespace: devops-ai
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app: api-gateway
+    feature: k8s-terraform
+    week: "2"
+spec:
+  rules:
+  - host: api-gateway.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: api-gateway
+            port:
+              number: 3000
