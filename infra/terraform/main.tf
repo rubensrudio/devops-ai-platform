@@ -325,12 +325,7 @@ resource "kubernetes_deployment" "worker_service" {
           name  = "worker-service"
           image = var.image_registry != "" ? "${var.image_registry}/worker-service:${var.image_tag}" : "worker-service:${var.image_tag}"
 
-<<<<<<< HEAD
           # Always quando registry externo (GHCR); Never para daemon minikube local.
-=======
-          # Never: imagem buildada localmente no daemon minikube (modo local).
-          # Always: forca pull do registry ao criar/reiniciar pod (modo GHCR).
->>>>>>> feature/cicd-T-04
           image_pull_policy = var.image_registry != "" ? "Always" : "Never"
 
           # Injeta variaveis de configuracao via ConfigMap (HEARTBEAT_INTERVAL, LOG_LEVEL)
