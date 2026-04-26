@@ -212,6 +212,7 @@
   - `infra/docker/.env.example`
 - **Descrição**: Criar `docker-compose.yml` em `infra/docker/` orquestrando `api-gateway` (contexto `../../apps/api-gateway`, porta `${API_PORT:-3000}:${API_PORT:-3000}`) e `worker-service` (contexto `../../apps/worker-service`, sem porta exposta). Ambos os serviços devem carregar variáveis de `.env` via `env_file`, ter `restart: unless-stopped` e estar na mesma rede interna Docker. Criar `.env.example` local (ou referenciar o da raiz) para o Compose. Documentar no `README.md` que o comando é `docker compose -f infra/docker/docker-compose.yml up --build` a partir da raiz.
 - **Critério de verificação**: `docker compose -f infra/docker/docker-compose.yml up --build` conclui sem erros. `curl http://localhost:3000/health` retorna HTTP 200. `docker logs worker-service` exibe heartbeats. `docker compose -f infra/docker/docker-compose.yml down` remove todos os containers sem erros. Alterar `API_PORT=4000` no `.env` e confirmar que o gateway sobe na nova porta.
+- **Status**: ✅ APROVADA em 2026-04-26 — branch: feature/init-TASK-010 ⚠️ critérios Docker pendentes de validação manual
 
 ---
 
