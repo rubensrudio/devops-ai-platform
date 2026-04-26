@@ -1,5 +1,9 @@
 # devops-ai-platform
 
+[![CI](https://github.com/rubensrudio/devops-ai-platform/actions/workflows/ci.yml/badge.svg)](https://github.com/rubensrudio/devops-ai-platform/actions/workflows/ci.yml)
+[![Docker Build](https://github.com/rubensrudio/devops-ai-platform/actions/workflows/docker-build.yml/badge.svg)](https://github.com/rubensrudio/devops-ai-platform/actions/workflows/docker-build.yml)
+[![Deploy](https://github.com/rubensrudio/devops-ai-platform/actions/workflows/deploy.yml/badge.svg)](https://github.com/rubensrudio/devops-ai-platform/actions/workflows/deploy.yml)
+
 A portfolio project integrating AI agents (Claude Code) into a complete DevOps cycle — from commit to running container, with deploy, rollback, and health-check orchestrated by the agent.
 
 The repository contains two services (`api-gateway` and `worker-service`) orchestrated via Docker Compose, the Claude Code agent context (`.claude/`), and skill/agent stubs for future expansion.
@@ -59,12 +63,17 @@ devops-ai-platform/
 │       ├── main.tf
 │       ├── variables.tf
 │       └── outputs.tf
-├── .github/                    # Placeholder for GitHub Actions
+├── .github/
+│   └── workflows/
+│       ├── ci.yml              # Lint + tests (push/PR develop, feature/**)
+│       ├── docker-build.yml    # Build + push GHCR (push develop)
+│       └── deploy.yml          # workflow_dispatch — registers deploy intent
 ├── mcp/                        # Placeholder for MCP Servers
 ├── scripts/
 │   ├── validate-structure.sh   # Validates repository directory structure
 │   ├── smoke-test.sh           # End-to-end integration test (Docker Compose)
-│   └── k8s-setup.sh            # Kubernetes local environment setup (minikube)
+│   ├── k8s-setup.sh            # Kubernetes local environment setup (minikube)
+│   └── deploy-from-registry.sh # End-to-end deploy via GHCR (IMAGE_TAG + IMAGE_REGISTRY)
 ├── .env.example                # Environment variables template
 └── README.md
 ```
@@ -181,6 +190,36 @@ Expected response (HTTP 200):
 
 ---
 
+## CI/CD
+
+Three GitHub Actions workflows automate the commit-to-deploy cycle.
+
+| Workflow | Trigger | Description |
+|----------|---------|-------------|
+| `ci.yml` | push/PR to `develop` and `feature/**` | Lint + tests for both services |
+| `docker-build.yml` | push to `develop` | Build and push images to GHCR (`latest` + `sha-<7>`) |
+| `deploy.yml` | `workflow_dispatch` | Registers deploy intent in DECISIONS.md + prints manual command |
+
+### Deploy via GHCR
+
+Before the first GHCR-based deploy, create the `imagePullSecret` in the cluster:
+
+```bash
+# Create imagePullSecret in the cluster
+kubectl create secret docker-registry ghcr-credentials \
+  --docker-server=ghcr.io \
+  --docker-username=rubensrudio \
+  --docker-password=<SEU_PAT_GHCR> \
+  -n devops-ai
+
+# Deploy with image from registry
+IMAGE_TAG=latest IMAGE_REGISTRY=ghcr.io/rubensrudio bash scripts/deploy-from-registry.sh
+```
+
+Replace `<SEU_PAT_GHCR>` with a GitHub Personal Access Token that has `read:packages` scope.
+
+---
+
 ## Commands
 
 | Command | Description |
@@ -203,7 +242,7 @@ Open the repository with Claude Code CLI and invoke:
 | Command | Description | Status | Reference file |
 |---------|-------------|--------|----------------|
 | `/deploy local` | Deploy to local Kubernetes cluster via `terraform apply` | **Real** | `.claude/skills/deploy.md` |
-| `/deploy staging` | Deploy to staging environment | Placeholder (Week 4) | `.claude/skills/deploy.md` |
+| `/deploy staging` | Deploy via GHCR using `deploy-from-registry.sh` | **Real** | `.claude/skills/deploy.md` |
 | `/deploy production` | Deploy to production (requires explicit confirmation) | Guardrail | `.claude/skills/deploy.md` |
 | `/rollback` | Roll back to previous version | Stub | `.claude/skills/rollback.md` |
 | `/health` | Check service status | Stub | `.claude/skills/health-check.md` |

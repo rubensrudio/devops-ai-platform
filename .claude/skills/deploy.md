@@ -157,7 +157,7 @@ Exemplos:
 /deploy staging sha-a1b2c3d
 ```
 
-**Fluxo de execucao (9 etapas):**
+**Fluxo de execucao (6 etapas):**
 
 ```
 Etapa 1 — Checklist de pre-requisitos (identico ao /deploy local)
