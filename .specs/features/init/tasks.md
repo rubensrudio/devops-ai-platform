@@ -224,6 +224,7 @@
   - `scripts/validate-structure.sh`
 - **Descrição**: Criar script bash compatível com WSL2/Linux que valida a existência dos diretórios e arquivos obrigatórios (`.claude/`, `apps/api-gateway/`, `apps/worker-service/`, `infra/docker/`, `.github/`, `mcp/`, `scripts/`, `.gitignore`, `.env.example`, `README.md`, `.claude/CLAUDE.md`). Retorna exit code 0 e mensagem de sucesso se tudo estiver presente. Retorna exit code 1 e lista cada item ausente se algum estiver faltando. Adicionar `chmod +x` ao arquivo e documentar no README que requer WSL2 ou ambiente Linux.
 - **Critério de verificação**: Executar o script em repositório completo → exit code 0. Remover um diretório obrigatório e executar → exit code 1 listando o item ausente. Restaurar e executar novamente → exit code 0.
+- **Status**: ✅ APROVADA em 2026-04-26 — branch: feature/init-TASK-011
 
 ---
 
@@ -257,6 +258,7 @@
   - `.gitignore`
 - **Descrição**: Criar `.gitattributes` configurando `* text=auto eol=lf` para garantir que scripts shell e arquivos de configuração usem LF em todos os ambientes (crítico para scripts bash em WSL2/Windows). Revisar e complementar o `.gitignore` criado na TASK-001 adicionando entradas específicas para Node.js (`dist/`, `*.log`), Python (`*.egg-info/`, `.venv/`), Docker (`*.tar`) e IDEs (`.vscode/`, `.idea/`). Atualizar `.env.example` se necessário para cobrir edge cases de ambiente.
 - **Critério de verificação**: `git check-attr text .gitattributes scripts/validate-structure.sh` retorna `text: auto`. Clonar o repositório em ambiente Windows e confirmar que os scripts shell têm terminação LF e são executáveis no WSL2.
+- **Status**: ✅ APROVADA em 2026-04-26 — branch: feature/init-TASK-013
 
 ---
 
