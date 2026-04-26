@@ -31,9 +31,3 @@ variable "log_level" {
     error_message = "log_level deve ser debug, info, warn ou error."
   }
 }
-
-variable "image_registry" {
-  description = "Registry de imagens Docker (ex: ghcr.io/rubensrudio). Vazio = imagem local minikube."
-  type        = string
-  default     = ""
-}
