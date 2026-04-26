@@ -261,11 +261,14 @@ step2_start_minikube() {
     minikube addons enable ingress || true
 
     # Aguardar ingress-nginx-controller ficar Ready
+    # Usa label app.kubernetes.io/component=controller para excluir os Job pods
+    # (ingress-nginx-admission-create/patch) que completam com Status: Succeeded
+    # e nunca ficam Ready — o que causaria falso timeout.
     log_info "Aguardando pod ingress-nginx-controller ficar Ready (timeout: ${INGRESS_WAIT_TIMEOUT}s)..."
     if ! kubectl wait \
             --for=condition=Ready \
             pod \
-            -l app.kubernetes.io/name=ingress-nginx \
+            -l app.kubernetes.io/component=controller \
             -n ingress-nginx \
             --timeout="${INGRESS_WAIT_TIMEOUT}s"; then
         log_error "ingress-nginx-controller não ficou Ready em ${INGRESS_WAIT_TIMEOUT}s."
