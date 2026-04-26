@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [develop, "feature/**"]
+  pull_request:
+    branches: [develop]
+
+jobs:
+  test-api-gateway:
+    name: api-gateway tests (Node.js)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/api-gateway
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: npm
+          cache-dependency-path: apps/api-gateway/package-lock.json
+      - run: npm ci
+      - run: npm test
+
+  test-worker-service:
+    name: worker-service tests (Python)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/worker-service
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: apps/worker-service/requirements.txt
+      - run: pip install pytest
+      - run: pytest tests/ -v
