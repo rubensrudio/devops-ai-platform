@@ -4,7 +4,7 @@
 # Setup completo do ambiente Kubernetes local (minikube) para a devops-ai-platform.
 #
 # Sequência de etapas:
-#   1. Verificar pré-requisitos — minikube, kubectl, terraform, docker, daemon
+#   1. Verificar pré-requisitos — minikube, kubectl, terraform, docker, curl, daemon
 #   2. Iniciar minikube — start com --driver=docker (idempotente se já rodando)
 #      e habilitar addon ingress, aguardando controller Ready
 #   3. Configurar contexto Docker — eval $(minikube docker-env)
@@ -21,6 +21,7 @@
 #   - minikube v1.32+   https://minikube.sigs.k8s.io/docs/start/
 #   - kubectl v1.29+    https://kubernetes.io/docs/tasks/tools/
 #   - terraform v1.7+   https://developer.hashicorp.com/terraform/downloads
+#   - curl              https://curl.se/ (sudo apt-get install curl no WSL2)
 #   - Docker Desktop com integração WSL2 habilitada
 #   - bash >= 4.0
 #
@@ -28,7 +29,7 @@
 #   Este script requer WSL2 com Docker Desktop integration habilitada em
 #   Docker Desktop → Settings → Resources → WSL Integration.
 #   O contexto Docker é alterado para o daemon do minikube via
-#   `eval $(minikube docker-env)` — essa alteração é válida apenas na
+#   `eval "$(minikube docker-env)"` — essa alteração é válida apenas na
 #   sessão corrente do shell.
 #
 # IDEMPOTÊNCIA:
@@ -183,6 +184,15 @@ step1_check_prerequisites() {
         log_info "  docker:     $(docker --version)"
     fi
 
+    # curl
+    if ! command -v curl &>/dev/null; then
+        log_error "curl não encontrado no PATH."
+        log_error "  Instale em: sudo apt-get install curl  (Ubuntu/Debian/WSL2)"
+        prereq_failed=1
+    else
+        log_info "  curl:       $(curl --version | head -1)"
+    fi
+
     # Sair já se algum binário estiver faltando (docker info vai falhar)
     if [[ ${prereq_failed} -eq 1 ]]; then
         log_summary_fail 1 "uma ou mais ferramentas obrigatórias não foram encontradas."
@@ -276,9 +286,8 @@ step2_start_minikube() {
 step3_configure_docker_context() {
     log_step 3 "Configurar contexto Docker para daemon minikube"
 
-    log_info "Executando: eval \$(minikube docker-env)"
-    # shellcheck disable=SC2046
-    eval $(minikube docker-env)
+    log_info "Executando: eval \"\$(minikube docker-env)\""
+    eval "$(minikube docker-env)"
 
     log_warn "AVISO: o contexto Docker desta sessão foi alterado para o daemon minikube."
     log_warn "       Imagens buildadas a seguir residem DENTRO do cluster minikube."
@@ -444,6 +453,7 @@ step8_validate_curl() {
     log_info "Executando: curl -H \"Host: api-gateway.local\" ${health_url}"
 
     local http_code
+    local curl_exit=0
     http_code=$(curl \
         -s \
         -o /dev/null \
@@ -451,7 +461,26 @@ step8_validate_curl() {
         --max-time "${CURL_TIMEOUT_SECONDS}" \
         -H "Host: api-gateway.local" \
         "${health_url}" \
-        2>/dev/null || echo "000")
+        2>/dev/null) || curl_exit=$?
+
+    # curl_exit 6 = could not resolve host, 7 = connection refused, 28 = timeout
+    if [[ ${curl_exit} -eq 28 ]]; then
+        log_error "curl atingiu o timeout de ${CURL_TIMEOUT_SECONDS}s sem resposta."
+        log_error "Possíveis causas:"
+        log_error "  - O Ingress nginx ainda não está pronto; aguarde e tente novamente"
+        log_error "  - minikube IP inacessível da sessão WSL2 atual"
+        log_error "  - Verifique: kubectl get ingress -n ${K8S_NAMESPACE}"
+        log_summary_fail 8 "curl timeout após ${CURL_TIMEOUT_SECONDS}s."
+        exit 1
+    elif [[ ${curl_exit} -ne 0 ]]; then
+        log_error "curl falhou com código de saída ${curl_exit} (sem resposta HTTP)."
+        log_error "Possíveis causas:"
+        log_error "  - Conexão recusada ou host inacessível (exit ${curl_exit})"
+        log_error "  - O Ingress ainda não redirecionou o tráfego"
+        log_error "  - Verifique: kubectl get ingress -n ${K8S_NAMESPACE}"
+        log_summary_fail 8 "curl falhou com exit ${curl_exit}."
+        exit 1
+    fi
 
     if [[ "${http_code}" != "200" ]]; then
         log_error "Esperado HTTP 200, recebido HTTP ${http_code}."
