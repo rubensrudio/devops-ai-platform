@@ -140,6 +140,7 @@
   - `apps/api-gateway/package.json`
 - **Descrição**: Implementar o serviço `api-gateway` em Node.js com Express. O único endpoint é `GET /health` que retorna HTTP 200 com JSON `{"status": "ok", "service": "api-gateway", "timestamp": "<ISO8601>"}`. Em estado degradado, retorna HTTP 503 com `{"status": "degraded", ...}`. O serviço deve ler `API_PORT` do ambiente (fallback `3000`) e logar na inicialização. Se variáveis de ambiente obrigatórias estiverem ausentes, falhar com mensagem descritiva no stderr.
 - **Critério de verificação**: `node src/index.js` sobe o servidor. `curl http://localhost:3000/health` retorna HTTP 200 com JSON no formato especificado. Alterar `API_PORT=4000` e confirmar que sobe na porta correta.
+- **Status**: ✅ APROVADA em 2026-04-26 — branch: feature/init-TASK-006
 
 ---
 
@@ -157,6 +158,7 @@
   - `apps/worker-service/requirements.txt`
 - **Descrição**: Implementar o `worker-service` em Python com loop `time.sleep`. A cada `$HEARTBEAT_INTERVAL` segundos (padrão: `10`), escrever no stdout uma linha no formato `[AAAA-MM-DDTHH:MM:SSZ] [worker-service] heartbeat — status: ok`. Se a inicialização falhar por configuração inválida, escrever no stderr e encerrar com exit code não-zero. O loop deve continuar mesmo se recursos externos falharem (modo degradado — não travar o container). Sem dependências externas além da stdlib Python.
 - **Critério de verificação**: `python src/main.py` inicia e exibe linhas de heartbeat a cada 10 segundos. `docker logs worker-service` exibe ao menos uma linha de heartbeat sem erros após o container subir.
+- **Status**: ✅ APROVADA em 2026-04-26 — branch: feature/init-TASK-007
 
 ---
 
