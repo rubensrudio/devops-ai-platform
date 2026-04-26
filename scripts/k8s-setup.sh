@@ -281,6 +281,13 @@ step2_start_minikube() {
 
     log_ok "Etapa 2 concluída — minikube rodando e ingress-nginx-controller Ready."
     log_info "  minikube IP: $(minikube ip 2>/dev/null || echo 'indisponível')"
+
+    log_info "NOTA: Para deploy via GHCR, crie o imagePullSecret no cluster:"
+    log_info "  kubectl create secret docker-registry ghcr-credentials \\"
+    log_info "    --docker-server=ghcr.io \\"
+    log_info "    --docker-username=<github-username> \\"
+    log_info "    --docker-password=<SEU_PAT_GHCR> \\"
+    log_info "    -n devops-ai"
 }
 
 # ---------------------------------------------------------------------------
