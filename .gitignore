@@ -1,5 +1,7 @@
 # =============================================================================
 # devops-ai-platform — .gitignore
+# Cobre: secrets, Node.js, Python, Docker, SO (macOS/Windows/Linux), IDEs.
+# Criado na TASK-001; complementado com entradas multi-OS na TASK-013.
 # =============================================================================
 
 # ---------------------------------------------------------------------------
@@ -97,3 +99,69 @@ $RECYCLE.BIN/
 *.ear
 target/
 out/
+
+# ---------------------------------------------------------------------------
+# Complementos TASK-013: edge cases multi-OS e ferramentas adicionais
+# ---------------------------------------------------------------------------
+
+# Node.js — artefatos adicionais
+.pnp
+.pnp.js
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+.eslintcache
+.parcel-cache
+.next/
+.nuxt/
+.cache/
+*.tsbuildinfo
+
+# Python — tooling adicional
+.pdm.toml
+.pdm-python
+__pypackages__/
+.nox/
+.tox/
+*.pyd
+*.pdb
+Pipfile.lock
+poetry.lock
+
+# Docker — artefatos adicionais
+.docker/
+docker-compose.override.yml
+
+# Terraform (preparação para Semana 3)
+.terraform/
+*.tfstate
+*.tfstate.backup
+*.tfstate.lock.info
+.terraform.lock.hcl
+crash.log
+
+# Kubernetes / Helm (preparação para Semana 3)
+kubeconfig
+*.kubeconfig
+
+# Logs genéricos
+logs/
+*.log.*
+npm-debug.log
+lerna-debug.log
+
+# Temporários e editores de texto
+*.tmp
+*.temp
+*.bak
+*.orig
+*.rej
+.editorconfig.cache
+
+# Relatórios de cobertura / testes
+test-results/
+coverage/
+*.lcov
+junit.xml
+test-report.xml

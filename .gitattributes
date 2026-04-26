@@ -1,0 +1,82 @@
+# =============================================================================
+# devops-ai-platform — .gitattributes
+# Garante terminação de linha consistente (LF) em todos os ambientes.
+# Crítico para scripts bash rodando em WSL2/Linux a partir de hosts Windows.
+# =============================================================================
+
+# Regra global: detecção automática de texto + normalizar para LF no checkout
+* text=auto eol=lf
+
+# ---------------------------------------------------------------------------
+# Scripts shell — forcar LF explicitamente (nunca CRLF)
+# ---------------------------------------------------------------------------
+*.sh        text eol=lf
+*.bash      text eol=lf
+
+# ---------------------------------------------------------------------------
+# Arquivos de configuração de texto
+# ---------------------------------------------------------------------------
+*.yml       text eol=lf
+*.yaml      text eol=lf
+*.json      text eol=lf
+*.toml      text eol=lf
+*.ini       text eol=lf
+*.cfg       text eol=lf
+*.conf      text eol=lf
+*.env       text eol=lf
+*.env.*     text eol=lf
+
+# ---------------------------------------------------------------------------
+# Código-fonte
+# ---------------------------------------------------------------------------
+*.js        text eol=lf
+*.ts        text eol=lf
+*.mjs       text eol=lf
+*.cjs       text eol=lf
+*.py        text eol=lf
+*.java      text eol=lf
+*.go        text eol=lf
+*.rs        text eol=lf
+*.rb        text eol=lf
+*.php       text eol=lf
+*.html      text eol=lf
+*.css       text eol=lf
+*.scss      text eol=lf
+*.xml       text eol=lf
+*.sql       text eol=lf
+*.md        text eol=lf
+*.txt       text eol=lf
+*.csv       text eol=lf
+Makefile    text eol=lf
+Dockerfile  text eol=lf
+*.dockerfile text eol=lf
+
+# ---------------------------------------------------------------------------
+# Arquivos binários — nunca manipular terminação de linha
+# ---------------------------------------------------------------------------
+*.png       binary
+*.jpg       binary
+*.jpeg      binary
+*.gif       binary
+*.ico       binary
+*.svg       binary
+*.woff      binary
+*.woff2     binary
+*.ttf       binary
+*.otf       binary
+*.eot       binary
+*.zip       binary
+*.tar       binary
+*.tar.gz    binary
+*.tgz       binary
+*.gz        binary
+*.bz2       binary
+*.7z        binary
+*.rar       binary
+*.jar       binary
+*.war       binary
+*.ear       binary
+*.class     binary
+*.pdf       binary
+*.pyc       binary
+*.pyo       binary
