@@ -1,0 +1,23 @@
+# =============================================================================
+# ConfigMap: platform-config
+# Namespace: devops-ai
+#
+# Os valores definidos em "data" abaixo correspondem aos defaults declarados
+# no arquivo .env.example na raiz do repositório. Qualquer alteração a esses
+# valores DEVE ser feita simultaneamente aqui E nas variáveis correspondentes
+# em infra/terraform/variables.tf (api_port, heartbeat_interval, log_level),
+# de modo a manter os dois mecanismos de deploy (kubectl e Terraform) em
+# sincronia.
+# =============================================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: platform-config
+  namespace: devops-ai
+  labels:
+    feature: k8s-terraform
+    week: "2"
+data:
+  API_PORT: "3000"
+  HEARTBEAT_INTERVAL: "10"
+  LOG_LEVEL: "info"
