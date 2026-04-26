@@ -166,3 +166,4 @@ coverage/
 junit.xml
 test-report.xml
 .claude/settings.local.json
+.specs/
