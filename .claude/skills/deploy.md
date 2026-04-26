@@ -17,12 +17,14 @@ dos servicos apos o deploy.
 | Parametro     | Tipo   | Obrigatorio | Valores aceitos                  | Descricao                                                       |
 |---------------|--------|-------------|----------------------------------|-----------------------------------------------------------------|
 | `<env>`       | string | Sim         | `local`, `staging`, `production` | Ambiente alvo do deploy                                         |
+| `<tag>`       | string | Nao         | Qualquer tag valida no GHCR      | Tag da imagem a deployar no staging (default: `latest`). Usado apenas com `/deploy staging`. |
 
 ### Exemplos
 
 ```
 /deploy local
 /deploy staging
+/deploy staging sha-a1b2c3d
 /deploy production
 ```
 
@@ -138,12 +140,86 @@ Etapa 8 — Reportar resultado
 
 ### /deploy staging
 
-Este ambiente e um placeholder para implementacao futura.
+Executa o fluxo de deploy no cluster minikube local consumindo imagens publicadas
+no GitHub Container Registry (GHCR). A tag da imagem e informada como parametro
+opcional (`/deploy staging <tag>`); se omitida, assume `latest`.
+
+**Sintaxe:**
 
 ```
-[deploy.md] /deploy staging invocado.
-STATUS: placeholder — implementacao planejada para Semana 4 (CI/CD com GitHub Actions).
-Nenhuma acao de infra foi executada.
+/deploy staging [<tag>]
+```
+
+Exemplos:
+```
+/deploy staging
+/deploy staging latest
+/deploy staging sha-a1b2c3d
+```
+
+**Fluxo de execucao (9 etapas):**
+
+```
+Etapa 1 — Checklist de pre-requisitos (identico ao /deploy local)
+  Executar as 4 verificacoes descritas na secao "Checklist de Pre-requisitos".
+  Qualquer falha: reportar erro + instrucao de resolucao + abortar.
+
+  Verificacoes:
+    kubectl version --client
+    minikube status
+    docker images | grep -E "api-gateway|worker-service"
+    terraform -chdir=infra/terraform validate
+
+Etapa 2 — Verificar existencia da tag no GHCR
+  docker pull ghcr.io/rubensrudio/api-gateway:<tag>
+
+  Resultado esperado: pull concluido sem erro (ou mensagem "Image is up to date").
+
+  Falha esperada se a tag nao existir:
+  ```
+  erro: a tag '<tag>' nao foi encontrada no GHCR para ghcr.io/rubensrudio/api-gateway.
+  Resolucao: verifique as tags disponiveis em https://github.com/rubensrudio/devops-ai-platform/pkgs/container/api-gateway
+             ou execute o workflow docker-build.yml para publicar uma nova imagem.
+  ```
+
+Etapa 3 — Configurar contexto kubectl
+  kubectl config use-context minikube
+
+Etapa 4 — Executar script de deploy via registry
+  IMAGE_TAG=<tag> IMAGE_REGISTRY=ghcr.io/rubensrudio bash scripts/deploy-from-registry.sh
+
+  O script executa internamente:
+    - terraform apply com image_registry e image_tag definidos
+    - kubectl rollout status para api-gateway e worker-service
+    - curl de health check via Ingress
+
+  Falha esperada se IMAGE_TAG nao for aceito pelo script:
+  ```
+  erro: deploy-from-registry.sh falhou na etapa de terraform apply ou rollout.
+  Resolucao: verifique os logs acima. Se ImagePullBackOff, confirme que o secret
+             'ghcr-credentials' existe no namespace devops-ai:
+             kubectl get secret ghcr-credentials -n devops-ai
+  ```
+
+Etapa 5 — Registrar decisao em DECISIONS.md
+  Adicionar entrada em .claude/memory/DECISIONS.md no formato:
+  [data] DECISAO: deploy staging executado via /deploy staging <tag> | RACIOCINIO: <resultado> | CONTEXTO: Semana 3, cicd, staging
+
+Etapa 6 — Reportar resultado
+  Exibir saida de: kubectl get pods -n devops-ai
+  Reportar sucesso ou falha com contexto do que ocorreu em cada etapa.
+```
+
+**Pre-requisito adicional para staging:**
+O secret `ghcr-credentials` deve existir no namespace `devops-ai` antes do primeiro
+deploy via GHCR. Se ausente, o pod entrara em `ImagePullBackOff`. Para criar:
+
+```bash
+kubectl create secret docker-registry ghcr-credentials \
+  --docker-server=ghcr.io \
+  --docker-username=<github-username> \
+  --docker-password=<ghcr-token> \
+  -n devops-ai
 ```
 
 ### /deploy production
