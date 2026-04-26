@@ -6,7 +6,7 @@
 
 A portfolio project integrating AI agents (Claude Code) into a complete DevOps cycle — from commit to running container, with deploy, rollback, and health-check orchestrated by the agent.
 
-The repository contains two services (`api-gateway` and `worker-service`) orchestrated via Docker Compose, the Claude Code agent context (`.claude/`), and skill/agent stubs for future expansion.
+The repository contains two services (`api-gateway` and `worker-service`) orchestrated via Docker Compose, with skills and agents for DevOps operations.
 
 ---
 
@@ -30,18 +30,6 @@ Shell scripts (`.sh`) require bash — use WSL2 on Windows. minikube, kubectl an
 
 ```
 devops-ai-platform/
-├── .claude/
-│   ├── CLAUDE.md               # Agent context — loaded automatically by Claude Code
-│   ├── memory/
-│   │   ├── DECISIONS.md        # Architectural decisions log
-│   │   └── LESSONS.md          # Agent learnings
-│   ├── agents/
-│   │   ├── deploy-agent.md     # Deploy agent stub
-│   │   └── review-agent.md     # Review agent stub
-│   └── skills/
-│       ├── deploy.md           # /deploy skill (real for env local)
-│       ├── rollback.md         # /rollback skill stub
-│       └── health-check.md     # /health skill stub
 ├── apps/
 │   ├── api-gateway/            # Node.js/Express — GET /health
 │   │   ├── src/
@@ -232,20 +220,6 @@ Replace `<SEU_PAT_GHCR>` with a GitHub Personal Access Token that has `read:pack
 | `docker logs worker-service` | worker-service logs |
 | `bash scripts/validate-structure.sh` | Validate repository structure |
 | `bash scripts/smoke-test.sh` | Run end-to-end integration test |
-
----
-
-## Agent skills
-
-Open the repository with Claude Code CLI and invoke:
-
-| Command | Description | Status | Reference file |
-|---------|-------------|--------|----------------|
-| `/deploy local` | Deploy to local Kubernetes cluster via `terraform apply` | **Real** | `.claude/skills/deploy.md` |
-| `/deploy staging` | Deploy via GHCR using `deploy-from-registry.sh` | **Real** | `.claude/skills/deploy.md` |
-| `/deploy production` | Deploy to production (requires explicit confirmation) | Guardrail | `.claude/skills/deploy.md` |
-| `/rollback` | Roll back to previous version | Stub | `.claude/skills/rollback.md` |
-| `/health` | Check service status | Stub | `.claude/skills/health-check.md` |
 
 ---
 
