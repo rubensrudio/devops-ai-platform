@@ -1,0 +1,61 @@
+name: Docker Build
+
+on:
+  push:
+    branches: [develop]
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # api-gateway
+      - name: Docker metadata (api-gateway)
+        id: meta-api
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/rubensrudio/api-gateway
+          tags: |
+            type=raw,value=latest
+            type=sha,format=short,prefix=sha-
+
+      - name: Build and push (api-gateway)
+        uses: docker/build-push-action@v5
+        with:
+          context: ./apps/api-gateway
+          push: true
+          tags: ${{ steps.meta-api.outputs.tags }}
+          cache-from: type=registry,ref=ghcr.io/rubensrudio/api-gateway:buildcache
+          cache-to: type=registry,ref=ghcr.io/rubensrudio/api-gateway:buildcache,mode=max
+
+      # worker-service
+      - name: Docker metadata (worker-service)
+        id: meta-worker
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/rubensrudio/worker-service
+          tags: |
+            type=raw,value=latest
+            type=sha,format=short,prefix=sha-
+
+      - name: Build and push (worker-service)
+        uses: docker/build-push-action@v5
+        with:
+          context: ./apps/worker-service
+          push: true
+          tags: ${{ steps.meta-worker.outputs.tags }}
+          cache-from: type=registry,ref=ghcr.io/rubensrudio/worker-service:buildcache
+          cache-to: type=registry,ref=ghcr.io/rubensrudio/worker-service:buildcache,mode=max
