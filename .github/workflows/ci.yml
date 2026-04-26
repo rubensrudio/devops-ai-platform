@@ -21,6 +21,7 @@ jobs:
           cache: npm
           cache-dependency-path: apps/api-gateway/package-lock.json
       - run: npm ci
+      - run: npm run lint
       - run: npm test
 
   test-worker-service:
@@ -36,5 +37,6 @@ jobs:
           python-version: "3.12"
           cache: pip
           cache-dependency-path: apps/worker-service/requirements.txt
-      - run: pip install pytest
+      - run: pip install ruff pytest
+      - run: ruff check src/ tests/
       - run: pytest tests/ -v
