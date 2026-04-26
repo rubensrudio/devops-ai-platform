@@ -176,6 +176,7 @@
   - `apps/api-gateway/.dockerignore`
 - **Descrição**: Criar Dockerfile com dois estágios: estágio `builder` usando `node:lts` para instalar dependências de produção, e estágio final usando `node:lts-alpine` copiando apenas o necessário (`node_modules` de produção e `src/`). Criar `.dockerignore` excluindo `node_modules`, `*.md`, `.env` e arquivos de desenvolvimento. A imagem final deve expor `$API_PORT` e usar `CMD ["node", "src/index.js"]`.
 - **Critério de verificação**: `docker build -t api-gateway .` na pasta `apps/api-gateway/` conclui sem erro. `docker images` mostra que a imagem final (`node:alpine`) é menor que a intermediária (`node:lts`). Container sobe e responde `GET /health` com HTTP 200.
+- **Status**: ✅ APROVADA em 2026-04-26 — branch: feature/init-TASK-008
 
 ---
 
@@ -193,6 +194,7 @@
   - `apps/worker-service/.dockerignore`
 - **Descrição**: Criar Dockerfile com dois estágios: estágio `builder` usando `python:3.12` para instalar dependências (se houver), e estágio final usando `python:3.12-slim` copiando apenas `src/` e `requirements.txt`. Criar `.dockerignore` excluindo `__pycache__`, `*.pyc`, `.env` e arquivos de desenvolvimento. A imagem final usa `CMD ["python", "src/main.py"]`.
 - **Critério de verificação**: `docker build -t worker-service .` na pasta `apps/worker-service/` conclui sem erro. `docker images` confirma que a imagem final usa `python:slim`. Container sobe e exibe heartbeats no stdout.
+- **Status**: ✅ APROVADA em 2026-04-26 — branch: feature/init-TASK-009
 
 ---
 
