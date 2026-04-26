@@ -68,6 +68,7 @@
   - `README.md`
 - **Descrição**: Criar o `README.md` raiz cobrindo: descrição do projeto, pré-requisitos (Docker Desktop com WSL2, Claude Code CLI), passos de setup (`cp .env.example .env` → `docker compose up --build`), comandos principais, localização do `docker-compose.yml` em `infra/docker/`, aviso de que o primeiro build sem cache pode ser lento e que o repositório começa privado. Referenciar os três comandos de skill (`/deploy`, `/rollback`, `/health`) como stubs.
 - **Critério de verificação**: Um novo colaborador consegue seguir apenas o `README.md` para subir os serviços — sem precisar de informação externa.
+- **Status**: ✅ APROVADA em 2026-04-26 — branch: feature/init-TASK-002
 
 ---
 
@@ -85,6 +86,7 @@
   - `.claude/memory/DECISIONS.md`
 - **Descrição**: Criar `.claude/CLAUDE.md` com: objetivo do projeto, lista de skills disponíveis (`/deploy`, `/rollback`, `/health`) com referência aos arquivos, referência aos agents (`deploy-agent`, `review-agent`), convenções de commit e guardrail explícito ("nunca fazer deploy em prod sem aprovação explícita do usuário"). Criar `.claude/memory/DECISIONS.md` com stub inicial contendo o formato de registro `[AAAA-MM-DD] DECISÃO: ... | RACIOCÍNIO: ... | CONTEXTO: ...` e a primeira decisão arquitetural (DA-01 sobre localização do docker-compose.yml).
 - **Critério de verificação**: Abrir o repositório no Claude Code e confirmar que o agente cita o objetivo do projeto e as skills disponíveis nas primeiras respostas sem input adicional do usuário. Confirmar que o agente se recusa a executar operações destrutivas se o arquivo for removido ou esvaziado.
+- **Status**: ✅ APROVADA em 2026-04-26 — branch: feature/init-TASK-003
 
 ---
 
@@ -102,6 +104,7 @@
   - `.claude/skills/deploy.md`
 - **Descrição**: Criar `.claude/memory/LESSONS.md` com stub inicial e instrução de formato. Criar `.claude/skills/deploy.md` como stub funcional com: descrição da skill, parâmetros esperados (`<env>`), mensagem de stub que o agente deve exibir ("skill em modo stub — não executa ainda"), checklist de verificação de disponibilidade de ferramentas (ex: `kubectl` não disponível no init) e placeholder para implementação futura.
 - **Critério de verificação**: Arquivo `.claude/memory/LESSONS.md` existe com formato documentado. Invocar `/deploy staging` no Claude Code e confirmar que o agente lê `skills/deploy.md` e exibe mensagem de stub sem erro.
+- **Status**: ✅ APROVADA em 2026-04-26 — branch: feature/init-TASK-004
 
 ---
 
@@ -119,6 +122,7 @@
   - `.claude/skills/health-check.md`
 - **Descrição**: Criar `.claude/skills/rollback.md` como stub com descrição, mensagem de stub e placeholder para lógica real. Criar `.claude/skills/health-check.md` como stub com descrição, status simulado hardcoded (`api-gateway: ok`, `worker-service: ok`) e instrução de que a integração real virá em semana futura. Criar `.claude/agents/deploy-agent.md` e `.claude/agents/review-agent.md` como stubs descrevendo a responsabilidade de cada agent.
 - **Critério de verificação**: Invocar `/rollback` e `/health` no Claude Code e confirmar que o agente lê os arquivos correspondentes e responde com mensagem de stub. Confirmar que os dois arquivos de agent existem no diretório correto.
+- **Status**: ✅ APROVADA em 2026-04-26 — branch: feature/init-TASK-005
 
 ---
 
