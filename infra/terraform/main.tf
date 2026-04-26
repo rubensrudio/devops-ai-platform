@@ -145,13 +145,25 @@ resource "kubernetes_deployment" "api_gateway" {
           run_as_user     = 1000
         }
 
+        # imagePullSecrets: criado apenas quando image_registry e fornecido (modo GHCR).
+        # O secret "ghcr-credentials" deve ser criado manualmente no cluster antes do deploy:
+        #   kubectl create secret docker-registry ghcr-credentials \
+        #     --docker-server=ghcr.io --docker-username=<user> --docker-password=<PAT> \
+        #     -n devops-ai
+        dynamic "image_pull_secrets" {
+          for_each = var.image_registry != "" ? [1] : []
+          content {
+            name = "ghcr-credentials"
+          }
+        }
+
         container {
           name  = "api-gateway"
-          image = "api-gateway:${var.image_tag}"
+          image = var.image_registry != "" ? "${var.image_registry}/api-gateway:${var.image_tag}" : "api-gateway:${var.image_tag}"
 
-          # Never: imagem deve estar pre-buildada no daemon minikube
-          # (via eval $(minikube docker-env) && docker compose build)
-          image_pull_policy = "Never"
+          # Never: imagem pre-buildada no daemon minikube (modo local).
+          # Always: forca pull do registry ao criar/reiniciar pod (modo GHCR).
+          image_pull_policy = var.image_registry != "" ? "Always" : "Never"
 
           port {
             container_port = var.api_port
@@ -300,12 +312,25 @@ resource "kubernetes_deployment" "worker_service" {
           run_as_user     = 1001
         }
 
+        # imagePullSecrets: criado apenas quando image_registry e fornecido (modo GHCR).
+        # O secret "ghcr-credentials" deve ser criado manualmente no cluster antes do deploy:
+        #   kubectl create secret docker-registry ghcr-credentials \
+        #     --docker-server=ghcr.io --docker-username=<user> --docker-password=<PAT> \
+        #     -n devops-ai
+        dynamic "image_pull_secrets" {
+          for_each = var.image_registry != "" ? [1] : []
+          content {
+            name = "ghcr-credentials"
+          }
+        }
+
         container {
           name  = "worker-service"
-          image = "worker-service:${var.image_tag}"
+          image = var.image_registry != "" ? "${var.image_registry}/worker-service:${var.image_tag}" : "worker-service:${var.image_tag}"
 
-          # Never: imagem buildada localmente no daemon minikube
-          image_pull_policy = "Never"
+          # Never: imagem buildada localmente no daemon minikube (modo local).
+          # Always: forca pull do registry ao criar/reiniciar pod (modo GHCR).
+          image_pull_policy = var.image_registry != "" ? "Always" : "Never"
 
           # Injeta variaveis de configuracao via ConfigMap (HEARTBEAT_INTERVAL, LOG_LEVEL)
           env_from {
