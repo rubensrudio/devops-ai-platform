@@ -27,10 +27,15 @@ spec:
       securityContext:
         runAsNonRoot: true
         runAsUser: 1000
+      # Local (minikube daemon): image: api-gateway:latest, imagePullPolicy: Never, sem imagePullSecrets
+      imagePullSecrets:
+        - name: ghcr-credentials
       containers:
         - name: api-gateway
-          image: api-gateway:latest
-          imagePullPolicy: Never
+          # Local (minikube daemon): image: api-gateway:latest, imagePullPolicy: Never, sem imagePullSecrets
+          image: ghcr.io/rubensrudio/api-gateway:latest
+          # Local (minikube daemon): image: api-gateway:latest, imagePullPolicy: Never, sem imagePullSecrets
+          imagePullPolicy: Always
           ports:
             - containerPort: 3000
               protocol: TCP
