@@ -165,5 +165,5 @@ coverage/
 *.lcov
 junit.xml
 test-report.xml
-.claude/settings.local.json
+.claude/
 .specs/
